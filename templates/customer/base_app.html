@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="app">
+<main class="stack">
+  <div class="spread">
+    <span class="brand">THE VAULT</span>
+    <span class="muted small">Proof of concept</span>
+  </div>
+  {% with msgs = get_flashed_messages() %}{% for m in msgs %}<div class="flash" role="status">{{ m }}</div>{% endfor %}{% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<nav class="tabbar" aria-label="Main">
+  <a href="{{ url_for('collection') }}" {% if active == 'collection' %}aria-current="page"{% endif %}>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/></svg>
+    Collection
+  </a>
+  <a href="{{ url_for('activity') }}" {% if active == 'activity' %}aria-current="page"{% endif %}>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+    Activity
+  </a>
+  <form method="post" action="{{ url_for('sign_out') }}" style="display: contents">
+    <button type="submit" style="background: none; border: 0; color: var(--muted); font: 600 12px var(--body); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+      Sign out
+    </button>
+  </form>
+</nav>
+</div>
+{% endblock %}

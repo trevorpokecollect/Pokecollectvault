@@ -1,0 +1,35 @@
+{% extends "staff/base_staff.html" %}
+{% block title %}Ship-outs · The Vault{% endblock %}
+{% block content %}
+<h1>Ship-outs</h1>
+<table>
+  <thead><tr><th>Card</th><th>Customer</th><th>Address</th><th>Requested</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr>
+    <td>
+      <div class="row">{% if r.front_thumb %}<img class="thumb" src="{{ url_for('media', path=r.front_thumb) }}" alt="">{% endif %}
+      <div><a href="{{ url_for('staff_item', vault_id=r.vault_id) }}">{{ r.vault_id }}</a><div class="small">{{ label(r) }}</div></div></div>
+    </td>
+    <td>{{ r.customer }}</td>
+    <td style="white-space: pre-line; max-width: 240px">{{ r.address }}</td>
+    <td>{{ r.requested_at[:10] }}</td>
+    <td>
+      {% if r.status == 'requested' %}
+      <form method="post" class="row">
+        <input type="hidden" name="shipment_id" value="{{ r.id }}">
+        <label class="visually-hidden" for="tracking-{{ r.id }}">Tracking number</label>
+        <input type="text" id="tracking-{{ r.id }}" name="tracking" placeholder="Tracking number" required style="min-width: 140px">
+        <button type="submit" class="btn">Mark shipped</button>
+      </form>
+      {% else %}
+      <span class="muted small">{{ r.status|capitalize }}{% if r.tracking %} · {{ r.tracking }}{% endif %}</span>
+      {% endif %}
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5" class="muted">No ship-out requests yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

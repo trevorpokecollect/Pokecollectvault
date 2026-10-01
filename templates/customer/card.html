@@ -1,0 +1,66 @@
+{% extends "customer/base_app.html" %}
+{% set active = 'collection' %}
+{% block title %}{{ label }} · The Vault{% endblock %}
+{% block content %}
+<a href="{{ url_for('collection') }}" style="text-decoration: none; color: var(--ink); font-weight: 500">← Collection</a>
+
+<div class="card3d-wrap">
+  <div class="card3d{{ ' graded' if it.kind == 'graded' else '' }}" id="card-{{ it.vault_id }}" data-card3d>
+    <div class="card3d-inner">
+      <div class="face front">
+        {% if it.front_image %}<img src="{{ url_for('media', path=it.front_image) }}" alt="Vault photo of {{ label }}, front">{% else %}Front photo pending{% endif %}
+        <div class="glare"></div>
+      </div>
+      <div class="face back">
+        {% if it.back_image %}<img src="{{ url_for('media', path=it.back_image) }}" alt="Vault photo of {{ label }}, back">{% else %}Back photo pending{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <button type="button" class="btn" data-flip-for="card-{{ it.vault_id }}" style="min-height: 44px; border-radius: 22px">Show back</button>
+    <span class="muted small">Drag across the card to tilt it</span>
+  </div>
+</div>
+
+<div class="stack" style="gap: 4px">
+  <h1 style="font-size: 24px">{{ label }}</h1>
+  <div class="muted small">{{ set_line }}{% if it.rarity %} · {{ it.rarity }}{% endif %}</div>
+  <div class="row" style="align-items: baseline; margin-top: 4px">
+    <span class="num" style="font-size: 28px">{{ value|money }}</span>
+    {% if change %}<span class="small {{ 'up' if change.up else 'down' }}">{{ '+' if change.up else '−' }}{{ (change.diff|abs)|money }} ({{ '+' if change.up else '−' }}{{ '%.1f'|format(change.pct|abs) }}%) over {{ rng }}</span>{% endif %}
+  </div>
+</div>
+
+<nav class="pills" aria-label="Time range">
+  {% for r in ranges %}<a class="pill" href="?range={{ r }}" aria-current="{{ 'true' if r == rng else 'false' }}">{{ r }}</a>{% endfor %}
+</nav>
+{% if chart %}
+<div class="chart">
+  <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img" aria-label="Card value over {{ rng }}">
+    <polygon points="{{ chart.area }}" fill="var(--accent)" fill-opacity="0.12"/>
+    <polyline points="{{ chart.line }}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+  </svg>
+</div>
+{% else %}
+<p class="muted small" style="margin: 0">Price history starts on the day this card entered the vault and fills in daily.</p>
+{% endif %}
+
+<div class="facts">
+  <div><span>Condition</span><span>{% if it.kind == 'graded' %}{{ it.grader }} {{ it.grade }}{% else %}Raw · {{ CONDITION_NAMES.get(it.condition, '—') }}{% endif %}</span></div>
+  {% if it.cert_number %}<div><span>Cert number</span><span>{{ it.cert_number }}</span></div>{% endif %}
+  <div><span>Vault ID</span><span class="num" style="font-weight: 500">{{ it.vault_id }}</span></div>
+  <div><span>Status</span><span>{% if it.status == 'in_vault' %}In vault, insured{% elif it.status == 'ship_requested' %}Ship-out requested{% else %}Shipped{% endif %}</span></div>
+  <div><span>In vault since</span><span>{{ it.intake_at[:10] }}</span></div>
+  {% if shipment and shipment.tracking %}<div><span>Tracking</span><span>{{ shipment.tracking }}</span></div>{% endif %}
+</div>
+
+<div class="stack" style="gap: 10px">
+  {% if it.status == 'in_vault' %}
+  <a class="btn primary block" href="{{ url_for('ship', vault_id=it.vault_id) }}">Ship home</a>
+  {% else %}
+  <button class="btn block" disabled>Ship-out requested</button>
+  {% endif %}
+  <button class="btn block" disabled>List for sale · coming in phase 2</button>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='card3d.js') }}"></script>{% endblock %}

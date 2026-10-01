@@ -1,0 +1,33 @@
+{% extends "staff/base_staff.html" %}
+{% block title %}{{ it.vault_id }} · The Vault{% endblock %}
+{% block content %}
+<div class="flash ok" role="status">Added {{ it.vault_id }} to {{ it.customer }}'s vault. Write {{ it.vault_id }} on the card's ID label.</div>
+{% for f in flags %}<div class="flash" role="alert">Check crop. {{ f }}</div>{% endfor %}
+<h1>{{ label }}</h1>
+<p class="muted" style="margin: 0">{{ set_line }}{% if it.rarity %} · {{ it.rarity }}{% endif %}</p>
+<div class="grid-2">
+  <div class="stack">
+    <h2>Front: original and auto-crop</h2>
+    <div class="grid-2">
+      <img src="{{ url_for('media', path=it.front_original) }}" alt="Original front scan" style="border-radius: 8px">
+      <img src="{{ url_for('media', path=it.front_image) }}" alt="Processed front" style="border-radius: 8px">
+    </div>
+  </div>
+  <div class="stack">
+    <h2>Back: original and auto-crop</h2>
+    {% if it.back_image %}
+    <div class="grid-2">
+      <img src="{{ url_for('media', path=it.back_original) }}" alt="Original back scan" style="border-radius: 8px">
+      <img src="{{ url_for('media', path=it.back_image) }}" alt="Processed back" style="border-radius: 8px">
+    </div>
+    {% else %}<p class="muted">No back image yet.</p>{% endif %}
+  </div>
+</div>
+<div class="facts">
+  <div><span>Owner</span><span>{{ it.customer }}</span></div>
+  <div><span>Condition</span><span>{% if it.kind == 'graded' %}{{ it.grader }} {{ it.grade }} · cert {{ it.cert_number or '—' }}{% else %}{{ CONDITION_NAMES.get(it.condition) }}{% endif %}</span></div>
+  <div><span>Value at intake</span><span>{{ value|money }}{% if value is none %} (graded prices not wired up yet){% endif %}</span></div>
+  {% if it.notes %}<div><span>Notes</span><span>{{ it.notes }}</span></div>{% endif %}
+</div>
+<div class="row"><a class="btn primary" href="{{ url_for('staff_intake') }}">Add the next card</a></div>
+{% endblock %}

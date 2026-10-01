@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="app">
+<main class="stack" style="padding-bottom: 40px">
+  <span class="brand">THE VAULT</span>
+  <h1>Proof of concept</h1>
+  <p class="muted" style="margin: 0">Customer sign-in is a demo picker for now. Choose a collection to view it as that customer.</p>
+  <div class="list">
+    {% for c in customers %}
+    <form method="post" action="{{ url_for('demo_sign_in', customer_id=c.id) }}">
+      <button type="submit" class="btn block" style="justify-content: space-between; margin-bottom: 8px">
+        <span>{{ c.name }}</span><span class="muted small">{{ c.cards }} card{{ '' if c.cards == 1 else 's' }}</span>
+      </button>
+    </form>
+    {% else %}
+    <p class="muted">No customers yet. Add a card through staff intake first.</p>
+    {% endfor %}
+  </div>
+  <a class="btn primary block" href="{{ url_for('staff_intake') }}">Staff: vault intake</a>
+  <a class="btn block" href="{{ url_for('staff_shipments') }}">Staff: ship-outs</a>
+</main>
+</div>
+{% endblock %}

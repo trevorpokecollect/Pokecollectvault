@@ -1,0 +1,27 @@
+{% extends "customer/base_app.html" %}
+{% set active = 'collection' %}
+{% block title %}Ship home · The Vault{% endblock %}
+{% block content %}
+<a href="{{ url_for('card_detail', vault_id=it.vault_id) }}" style="text-decoration: none; color: var(--ink); font-weight: 500">← Back</a>
+<h1>Ship this card home</h1>
+<div class="card-box row">
+  {% if it.front_thumb %}<img class="thumb" src="{{ url_for('media', path=it.front_thumb) }}" alt="">{% else %}<span class="thumb">{{ it.set_code or '—' }}</span>{% endif %}
+  <div>
+    <strong>{{ label }}</strong>
+    <div class="muted small">{{ set_line }}</div>
+    <div class="small">Insured for {{ value|money }}</div>
+  </div>
+</div>
+<form method="post" class="stack">
+  <div>
+    <label for="address">Ship to</label>
+    <textarea id="address" name="address" required autocomplete="shipping street-address" placeholder="Name, street, city, state, ZIP"></textarea>
+  </div>
+  <div class="facts">
+    <div><span>Shipping and insurance</span><span>[Fee TBD]</span></div>
+    <div><span>Delivery</span><span>Signature required</span></div>
+  </div>
+  <p class="muted small" style="margin: 0">The card leaves the vault once we pack it. Its history stays in your account, but it no longer counts toward your collection value.</p>
+  <button type="submit" class="btn primary block">Request ship-out</button>
+</form>
+{% endblock %}

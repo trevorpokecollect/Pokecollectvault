@@ -1,0 +1,94 @@
+{% extends "staff/base_staff.html" %}
+{% block title %}Vault intake · The Vault{% endblock %}
+{% block content %}
+<h1>Vault intake</h1>
+<p class="muted" style="margin: 0">Scan or photograph the card, check the automatic crop, match it to the catalog, and add it to a customer's vault.</p>
+
+<form method="post" enctype="multipart/form-data" class="stack" id="intake-form">
+  <div class="grid-2">
+    <fieldset class="stack">
+      <legend>1. Images</legend>
+      <div class="row">
+        <label style="margin: 0"><input type="radio" name="kind" value="raw" checked> Raw card</label>
+        <label style="margin: 0"><input type="radio" name="kind" value="graded"> Graded slab</label>
+      </div>
+      <div class="grid-2">
+        <div class="drop">
+          <label for="front">Front scan</label>
+          <input type="file" id="front" name="front" accept="image/*" capture="environment" required data-preview="front-preview">
+          <img id="front-preview" alt="" hidden>
+          <div class="small" id="front-preview-note" aria-live="polite"></div>
+        </div>
+        <div class="drop">
+          <label for="back">Back scan</label>
+          <input type="file" id="back" name="back" accept="image/*" capture="environment" data-preview="back-preview">
+          <img id="back-preview" alt="" hidden>
+          <div class="small" id="back-preview-note" aria-live="polite"></div>
+        </div>
+      </div>
+      <p class="muted small" style="margin: 0">Previews show the automatic crop. Leave a little background around the card for the cleanest edges.</p>
+    </fieldset>
+
+    <div class="stack">
+      <fieldset class="stack">
+        <legend>2. Card</legend>
+        <div>
+          <label for="card-search">Search the catalog</label>
+          <input type="search" id="card-search" placeholder="e.g. rayquaza vmax 218" autocomplete="off" aria-controls="card-results">
+        </div>
+        <div class="results" id="card-results" hidden></div>
+        <input type="hidden" name="card_id" id="card-id">
+        <div class="card-box" id="card-picked" hidden></div>
+        <div id="raw-fields">
+          <label for="condition">Condition</label>
+          <select id="condition" name="condition">
+            {% for c in conditions %}<option value="{{ c }}">{{ CONDITION_NAMES[c] }}</option>{% endfor %}
+          </select>
+        </div>
+        <div id="graded-fields" class="grid-2" hidden>
+          <div><label for="grader">Grader</label>
+            <select id="grader" name="grader"><option value="">Choose</option><option>PSA</option><option>BGS</option><option>CGC</option><option>TAG</option><option>ACE</option></select></div>
+          <div><label for="grade">Grade</label><input type="text" id="grade" name="grade" placeholder="10"></div>
+          <div><label for="cert">Cert number</label><input type="text" id="cert" name="cert_number"></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="stack">
+        <legend>3. Owner</legend>
+        <div>
+          <label for="customer">Customer</label>
+          <select id="customer" name="customer_id" required>
+            {% for c in customers %}<option value="{{ c.id }}">{{ c.name }}{% if c.email %} ({{ c.email }}){% endif %}</option>{% endfor %}
+            <option value="new">+ New customer</option>
+          </select>
+        </div>
+        <div id="new-customer" class="grid-2" hidden>
+          <div><label for="new_name">Name</label><input type="text" id="new_name" name="new_name"></div>
+          <div><label for="new_email">Email</label><input type="email" id="new_email" name="new_email"></div>
+        </div>
+        <div><label for="notes">Notes (optional)</label><input type="text" id="notes" name="notes" placeholder="e.g. light whitening on back corner"></div>
+      </fieldset>
+    </div>
+  </div>
+  <button type="submit" class="btn primary">Add to vault and assign vault ID</button>
+</form>
+
+{% if recent %}
+<h2>Recently added</h2>
+<table>
+  <thead><tr><th>Image</th><th>Vault ID</th><th>Card</th><th>Customer</th><th>Check</th></tr></thead>
+  <tbody>
+  {% for r in recent %}
+  <tr>
+    <td>{% if r.front_thumb %}<img class="thumb" src="{{ url_for('media', path=r.front_thumb) }}" alt="">{% endif %}</td>
+    <td><a href="{{ url_for('staff_item', vault_id=r.vault_id) }}">{{ r.vault_id }}</a></td>
+    <td>{{ r.name }}</td>
+    <td>{{ r.customer }}</td>
+    <td>{% if r.image_flags %}<span class="tag">Check crop</span>{% else %}<span class="muted small">OK</span>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='intake.js') }}"></script>{% endblock %}

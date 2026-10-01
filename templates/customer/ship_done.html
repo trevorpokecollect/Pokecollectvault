@@ -1,0 +1,11 @@
+{% extends "customer/base_app.html" %}
+{% set active = 'collection' %}
+{% block title %}Ship-out requested · The Vault{% endblock %}
+{% block content %}
+<div class="stack" style="align-items: center; text-align: center; padding-top: 48px">
+  <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--up)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
+  <h1>Ship-out requested</h1>
+  <p class="muted" style="margin: 0; max-width: 300px">We'll pack {{ label }} ({{ it.vault_id }}) and email tracking within [X] business days.</p>
+  <a class="btn primary block" href="{{ url_for('collection') }}">Back to collection</a>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "customer/base_app.html" %}
+{% set active = 'collection' %}
+{% block title %}Your collection · The Vault{% endblock %}
+{% block content %}
+<div class="stack" style="gap: 6px">
+  <div class="muted small">{{ g.customer.name }} · collection value</div>
+  <div class="num" style="font-size: 40px">{{ total|money }}</div>
+  {% if change %}
+  <div class="{{ 'up' if change.up else 'down' }}" style="font-weight: 500">
+    {{ '+' if change.up else '−' }}{{ (change.diff|abs)|money }} ({{ '+' if change.up else '−' }}{{ '%.1f'|format(change.pct|abs) }}%) over {{ rng }}
+  </div>
+  {% else %}
+  <div class="muted small">Value history builds daily from each card's intake date.</div>
+  {% endif %}
+</div>
+
+<nav class="pills" aria-label="Time range">
+  {% for r in ranges %}<a class="pill" href="?range={{ r }}" aria-current="{{ 'true' if r == rng else 'false' }}">{{ r }}</a>{% endfor %}
+</nav>
+
+{% if chart %}
+<div class="chart">
+  <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img" aria-label="Collection value over {{ rng }}">
+    <polygon points="{{ chart.area }}" fill="var(--accent)" fill-opacity="0.12"/>
+    <polyline points="{{ chart.line }}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+  </svg>
+</div>
+{% endif %}
+
+<div class="spread" style="border-bottom: 1px solid var(--line); padding-bottom: 8px">
+  <h2>Your cards</h2>
+  <span class="muted small">{{ in_vault }} in vault{% if shipping %} · {{ shipping }} shipping{% endif %}{% if unpriced %} · {{ unpriced }} not priced yet{% endif %}</span>
+</div>
+<div class="list" style="margin-top: -16px">
+  {% for r in rows %}
+  <a class="item" href="{{ url_for('card_detail', vault_id=r.item.vault_id) }}">
+    {% if r.item.front_thumb %}<img class="thumb" src="{{ url_for('media', path=r.item.front_thumb) }}" alt="">{% else %}<span class="thumb">{{ r.item.set_code or '—' }}</span>{% endif %}
+    <span class="meta">
+      <strong>{{ r.label }}</strong>
+      <span class="muted small">{{ r.set_line }}</span>
+      {% if r.item.status == 'ship_requested' %}<span class="tag">Ship-out requested</span>{% endif %}
+    </span>
+    <span class="val">
+      <span class="num">{{ r.value|money }}</span>
+      {% if r.change %}<span class="small {{ 'up' if r.change.up else 'down' }}">{{ '+' if r.change.up else '−' }}{{ '%.1f'|format(r.change.pct|abs) }}%</span>{% endif %}
+    </span>
+  </a>
+  {% else %}
+  <p class="muted">No cards in your vault yet.</p>
+  {% endfor %}
+</div>
+<p class="muted small" style="margin: 0">Values are market estimates from our price source, updated daily. They are not offers to buy.</p>
+{% endblock %}

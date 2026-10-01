@@ -1,0 +1,19 @@
+{% extends "customer/base_app.html" %}
+{% set active = 'activity' %}
+{% block title %}Activity · The Vault{% endblock %}
+{% block content %}
+<h1>Activity</h1>
+<div class="list">
+  {% for r in rows %}
+  <div class="spread" style="padding: 14px 0; border-bottom: 1px solid var(--line); align-items: center">
+    <div style="min-width: 0">
+      <strong>{{ r.title }}</strong>
+      <div class="muted small">{{ r.detail }} · {{ r.created_at[:10] }}</div>
+    </div>
+    {% if r.status %}<span class="small" style="flex-shrink: 0; font-weight: 600; padding: 4px 10px; border-radius: 12px; border: 1px solid var(--line-2)">{{ r.status }}</span>{% endif %}
+  </div>
+  {% else %}
+  <p class="muted">Cards added to your vault and ship-outs show up here.</p>
+  {% endfor %}
+</div>
+{% endblock %}

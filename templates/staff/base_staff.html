@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="topbar">
+  <a class="brand" href="{{ url_for('home') }}">THE VAULT · STAFF</a>
+  <nav class="row" aria-label="Staff">
+    <a href="{{ url_for('staff_intake') }}">Intake</a>
+    <a href="{{ url_for('staff_shipments') }}">Ship-outs</a>
+  </nav>
+</header>
+<div class="staff-wrap stack">
+  {% with msgs = get_flashed_messages() %}{% for m in msgs %}<div class="flash" role="status">{{ m }}</div>{% endfor %}{% endwith %}
+  {% block content %}{% endblock %}
+</div>
+{% endblock %}
