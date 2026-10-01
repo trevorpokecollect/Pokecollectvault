@@ -1,0 +1,18 @@
+name: fetch-images
+on:
+  push:
+    branches: [temp-img-fetch]
+permissions:
+  contents: write
+jobs:
+  fetch:
+    if: "!contains(github.event.head_commit.message, 'imgs')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p imgs
+          B=https://cdn.shopify.com/s/files/1/0468/5299/7280/files
+          for u in 30thday.png 30thnight.png 30thbundle.png RFPBB.png RFB.png RFDN.png; do curl -sSfL -o imgs/$u "$B/$u"; done
+          git config user.name bot; git config user.email bot@users.noreply.github.com
+          git add imgs && git commit -m "imgs" && git push
