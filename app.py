@@ -6,6 +6,7 @@ Run locally:
 
 Not production-ready: sign-in is a demo picker and a shared staff passcode.
 """
+import logging
 import os
 import secrets
 from datetime import date, timedelta
@@ -14,7 +15,7 @@ from functools import wraps
 from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
                    request, send_from_directory, session, url_for)
 
-from vault import db
+from vault import db, jobs
 from vault.imaging import process_card
 from vault.pricing import item_value
 
@@ -26,6 +27,15 @@ RANGES = {"1M": 30, "3M": 90, "6M": 180, "1Y": 365}
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or secrets.token_hex(16)
 app.config["MAX_CONTENT_LENGTH"] = 40 * 1024 * 1024  # two scans per card
+
+# Hosted mode (gunicorn on Railway): prepare the database on start and run the daily job in-process.
+if os.environ.get("RUN_SCHEDULER") == "1":
+    logging.basicConfig(level=logging.INFO)
+    if not os.environ.get("SECRET_KEY") or STAFF_PASSCODE == "vault-demo":
+        logging.getLogger("vault").warning("Set SECRET_KEY and STAFF_PASSCODE for a hosted deployment.")
+    os.makedirs(UPLOADS, exist_ok=True)
+    jobs.ensure_ready()
+    jobs.start_scheduler()
 
 
 # ---------- helpers ----------
@@ -169,6 +179,12 @@ def demo_sign_in(customer_id):
 def sign_out():
     session.clear()
     return redirect(url_for("home"))
+
+
+@app.route("/healthz")
+def healthz():
+    conn().execute("SELECT 1").fetchone()
+    return {"ok": True}
 
 
 @app.route("/media/<path:path>")
@@ -427,5 +443,5 @@ def preview_crop():
 
 
 if __name__ == "__main__":
-    db.init_db()
+    jobs.ensure_ready()
     app.run(host=os.environ.get("HOST", "127.0.0.1"), port=int(os.environ.get("PORT", 5000)), debug=bool(os.environ.get("DEBUG")))

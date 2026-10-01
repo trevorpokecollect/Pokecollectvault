@@ -29,11 +29,31 @@ python3 app.py               # http://127.0.0.1:5000
 
 Staff passcode: `vault-demo` (set `STAFF_PASSCODE` to change it). Add a card through **Staff: vault intake**, then sign in as that customer on the home page.
 
-Tests (12, including the full intake → collection → ship-out → shipped loop):
+Tests (15, including the full intake → collection → ship-out → shipped loop):
 
 ```bash
 python3 -m unittest discover tests
 ```
+
+## Deploy (Railway)
+
+The repo includes `railway.json`, which starts the app with gunicorn and health-checks `/healthz`.
+
+1. Create a service from this GitHub repo.
+2. Add a **volume** mounted at `/data`, for the database and card images.
+3. Set these variables:
+
+   | Variable | Value |
+   | --- | --- |
+   | `RUN_SCHEDULER` | `1` (set up the database on start and run the daily price/value job inside the app) |
+   | `VAULT_DB` | `/data/vault.db` |
+   | `VAULT_UPLOADS` | `/data/uploads` |
+   | `SECRET_KEY` | a long random string |
+   | `STAFF_PASSCODE` | your staff passcode |
+
+4. Generate a public domain.
+
+On first start the app creates the database, loads the catalog, and adds the demo customer. The daily job runs once a day after `DAILY_HOUR_UTC` (default 9 UTC, about 3–4 a.m. Central). Keep a single app instance: the database is a file on the volume.
 
 ## Prices and value history
 
@@ -41,7 +61,7 @@ python3 -m unittest discover tests
   - `seed` (default): `data/seed-catalog.json`, a snapshot of Poke-Collect's in-stock singles (Near Mint and other conditions).
   - `shopify`: live pull from the Shopify Admin API. Set `PRICE_SOURCE=shopify`, `SHOPIFY_STORE=poke-collect-al.myshopify.com` and `SHOPIFY_ADMIN_TOKEN` (a custom app token with `read_products`).
   - To add a licensed source later (JustTCG, PriceCharting for graded slabs, a Storepass/TCGplayer feed), write another `PriceSource` class.
-- **Run `scripts/daily.py` once a day.** It refreshes prices and saves each card's value for the day. History and change figures come only from these real snapshots, so each card's chart starts on its intake date.
+- **Run `scripts/daily.py` once a day** when running locally (hosted deployments with `RUN_SCHEDULER=1` do this automatically). It refreshes prices and saves each card's value for the day. History and change figures come only from these real snapshots, so each card's chart starts on its intake date.
 - Graded slabs are stored and shown but not priced yet (they show "—" until a graded price source is added).
 
 ## Configuration
