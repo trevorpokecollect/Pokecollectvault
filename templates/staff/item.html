@@ -1,5 +1,5 @@
 {% extends "staff/base_staff.html" %}
-{% block title %}{{ it.vault_id }} · The Vault{% endblock %}
+{% block title %}{{ it.vault_id }} · CloudBinder{% endblock %}
 {% block content %}
 <div class="flash ok" role="status">Added {{ it.vault_id }} to {{ it.customer }}'s vault. Write {{ it.vault_id }} on the card's ID label.</div>
 {% for f in flags %}<div class="flash" role="alert">Check crop. {{ f }}</div>{% endfor %}

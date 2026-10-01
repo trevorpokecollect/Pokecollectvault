@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block body %}
 <header class="topbar">
-  <a class="brand" href="{{ url_for('home') }}">THE VAULT · STAFF</a>
+  <a class="brand" href="{{ url_for('home') }}">{% include "brand.html" %}<span class="brand-sub">Staff</span></a>
   <nav class="row" aria-label="Staff">
     <a href="{{ url_for('staff_intake') }}">Intake</a>
     <a href="{{ url_for('staff_shipments') }}">Ship-outs</a>

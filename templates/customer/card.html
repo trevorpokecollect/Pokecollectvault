@@ -1,6 +1,6 @@
 {% extends "customer/base_app.html" %}
 {% set active = 'collection' %}
-{% block title %}{{ label }} · The Vault{% endblock %}
+{% block title %}{{ label }} · CloudBinder{% endblock %}
 {% block content %}
 <a href="{{ url_for('collection') }}" style="text-decoration: none; color: var(--ink); font-weight: 500">← Collection</a>
 
@@ -37,8 +37,8 @@
 {% if chart %}
 <div class="chart">
   <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img" aria-label="Card value over {{ rng }}">
-    <polygon points="{{ chart.area }}" fill="var(--accent)" fill-opacity="0.12"/>
-    <polyline points="{{ chart.line }}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="{{ chart.area }}" fill="var(--chart)" fill-opacity="0.18"/>
+    <polyline points="{{ chart.line }}" fill="none" stroke="var(--chart)" stroke-width="2.5" stroke-linejoin="round"/>
   </svg>
 </div>
 {% else %}

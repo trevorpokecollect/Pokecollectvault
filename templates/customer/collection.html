@@ -1,6 +1,6 @@
 {% extends "customer/base_app.html" %}
 {% set active = 'collection' %}
-{% block title %}Your collection · The Vault{% endblock %}
+{% block title %}Your collection · CloudBinder{% endblock %}
 {% block content %}
 <div class="stack" style="gap: 6px">
   <div class="muted small">{{ g.customer.name }} · collection value</div>
@@ -21,8 +21,8 @@
 {% if chart %}
 <div class="chart">
   <svg viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img" aria-label="Collection value over {{ rng }}">
-    <polygon points="{{ chart.area }}" fill="var(--accent)" fill-opacity="0.12"/>
-    <polyline points="{{ chart.line }}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="{{ chart.area }}" fill="var(--chart)" fill-opacity="0.18"/>
+    <polyline points="{{ chart.line }}" fill="none" stroke="var(--chart)" stroke-width="2.5" stroke-linejoin="round"/>
   </svg>
 </div>
 {% endif %}

@@ -2,9 +2,9 @@
 {% block body %}
 <div class="app">
 <main class="stack" style="padding-bottom: 40px">
-  <span class="brand">THE VAULT</span>
-  <h1>Proof of concept</h1>
-  <p class="muted" style="margin: 0">Customer sign-in is a demo picker for now. Choose a collection to view it as that customer.</p>
+  <span class="brand">{% include "brand.html" %}</span>
+  <p class="tagline">Your cards,<br><span>vaulted.</span></p>
+  <p class="muted" style="margin: 0">Proof of concept. Customer sign-in is a demo picker for now: choose a collection to view it as that customer.</p>
   <div class="list">
     {% for c in customers %}
     <form method="post" action="{{ url_for('demo_sign_in', customer_id=c.id) }}">

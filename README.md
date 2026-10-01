@@ -1,6 +1,6 @@
-# The Vault: proof of concept
+# CloudBinder: proof of concept
 
-A card vault for Pokémon collectors: staff take cards in with automatic image cropping, customers see their collection's value in a mobile app, and can request any card shipped home.
+CloudBinder, powered by Poke-Collect, is a card vault for Pokémon collectors: staff take cards in with automatic image cropping, customers see their collection's value in a mobile app, and can request any card shipped home.
 
 **Status:** proof of concept. Sign-in is a demo picker and a shared staff passcode, values come from a snapshot of the Poke-Collect Shopify catalog, and storage is local SQLite. See [Before real customers](#before-real-customers).
 

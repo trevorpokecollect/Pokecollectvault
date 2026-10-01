@@ -3,7 +3,7 @@
 <div class="app">
 <main class="stack">
   <div class="spread">
-    <span class="brand">THE VAULT</span>
+    <span class="brand">{% include "brand.html" %}</span>
     <span class="muted small">Proof of concept</span>
   </div>
   {% with msgs = get_flashed_messages() %}{% for m in msgs %}<div class="flash" role="status">{{ m }}</div>{% endfor %}{% endwith %}
