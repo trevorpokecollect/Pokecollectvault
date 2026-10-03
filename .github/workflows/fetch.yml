@@ -13,6 +13,6 @@ jobs:
       - run: |
           mkdir -p imgs
           B=https://cdn.shopify.com/s/files/1/0468/5299/7280/files
-          for u in 30thday.png 30thnight.png 30thbundle.png RFPBB.png RFB.png RFDN.png; do curl -sSfL -o imgs/$u "$B/$u"; done
+          for u in jp30.png 30th_deck_set.png 30thbundle-release.png reality-fracture-multiverse-reforged.png RFCB.png RFPBB.png; done
           git config user.name bot; git config user.email bot@users.noreply.github.com
           git add imgs && git commit -m "imgs" && git push
