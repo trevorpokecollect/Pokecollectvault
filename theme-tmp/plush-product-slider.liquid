@@ -1,0 +1,476 @@
+{%- comment -%}
+  Plush Product Slider — Poke-Collect
+  Companion to the Holo Product Slider, made for plush: soft pastel "pillow" cards with a stitched seam.
+  The plush gently breathes, and hops with a little squish (plus floating hearts) on hover.
+  On phones the card in view hops on its own every few seconds.
+  Add via: Online Store > Themes > Edit code > sections folder > Add a new section (name: plush-product-slider), paste this file, Save.
+  Then: Customize > Add section > "Plush Product Slider".
+{%- endcomment -%}
+
+{%- liquid
+  assign sid = section.id
+  assign coll = section.settings.collection
+  assign limit = section.settings.products_to_show
+-%}
+
+{% style %}
+  #plush-{{ sid }} {
+    --pl-bg: {{ section.settings.bg_color }};
+    --pl-text: {{ section.settings.text_color }};
+    --pl-accent: {{ section.settings.accent_color }};
+    --pl-card: {{ section.settings.card_color }};
+    background: var(--pl-bg);
+    color: var(--pl-text);
+    padding: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;
+    overflow: hidden;
+  }
+  #plush-{{ sid }} .plush-wrap { max-width: {% if section.settings.full_width %}none{% else %}1400px{% endif %}; margin: 0 auto; padding: 0 clamp(16px, 2.5vw, 40px); }
+  #plush-{{ sid }} .plush-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+  #plush-{{ sid }} .plush-title { margin: 0; font-size: clamp(24px, 3vw, 36px); line-height: 1.1; letter-spacing: .5px; }
+  #plush-{{ sid }} .plush-title .plush-badge {
+    display: inline-block; font-size: .55em; vertical-align: middle; margin-right: 10px; padding: 4px 10px; border-radius: 999px;
+    background: linear-gradient(90deg,#ffc7dd,#ffe7a8,#c8f3d9,#c6e6ff,#e2d4ff); color: #111; font-weight: 800; letter-spacing: 1px;
+  }
+  #plush-{{ sid }} .plush-sub { margin: 6px 0 0; opacity: .75; font-size: 15px; }
+  #plush-{{ sid }} .plush-nav { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  #plush-{{ sid }} .plush-btn {
+    width: 44px; height: 44px; border-radius: 50%; border: 2px solid currentColor; background: transparent; color: inherit;
+    cursor: pointer; display: grid; place-items: center; transition: background .2s, color .2s, opacity .2s;
+  }
+  #plush-{{ sid }} .plush-btn:hover { background: var(--pl-accent); border-color: var(--pl-accent); color: #fff; }
+  #plush-{{ sid }} .plush-btn[disabled] { opacity: .3; cursor: default; background: transparent; color: inherit; border-color: currentColor; }
+  #plush-{{ sid }} .plush-viewall {
+    box-sizing: border-box; display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 18px; margin-right: 6px;
+    border-radius: 12px; background: var(--pl-accent); color: #fff; text-decoration: none; white-space: nowrap;
+    font-size: 14px; font-weight: 800; letter-spacing: .3px; line-height: 1;
+    box-shadow: 0 4px 12px rgba(226,47,57,.25); transition: transform .15s, box-shadow .2s; -webkit-tap-highlight-color: transparent;
+  }
+  #plush-{{ sid }} .plush-viewall:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(226,47,57,.32); color: #fff; }
+  #plush-{{ sid }} .plush-viewall:active { transform: scale(.98); }
+  #plush-{{ sid }} .plush-viewall:focus-visible { outline: 3px solid #262626; outline-offset: 2px; }
+  #plush-{{ sid }} .plush-viewall .plush-more-count { font-weight: 600; opacity: .8; font-size: 13px; }
+
+  #plush-{{ sid }} .plush-track {
+    --cols: {{ section.settings.columns_desktop }}; --gap: {% if section.settings.columns_desktop > 4 %}16px{% else %}22px{% endif %};
+    display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols)); gap: var(--gap);
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 18px 12px 44px; margin: -18px -12px -30px; scroll-padding-left: 12px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  #plush-{{ sid }} .plush-track::-webkit-scrollbar { display: none; }
+  {%- if section.settings.columns_desktop > 5 %}
+  @media (max-width: 1599px) { #plush-{{ sid }} .plush-track { --cols: 5; } }
+  {%- endif %}
+  @media (max-width: 1280px) { #plush-{{ sid }} .plush-track { --cols: {% if section.settings.columns_desktop > 4 %}4{% else %}{{ section.settings.columns_desktop }}{% endif %}; } }
+  @media (max-width: 1000px) { #plush-{{ sid }} .plush-track { --cols: 3; --gap: 16px; } }
+  @media (max-width: 760px)  { #plush-{{ sid }} .plush-track { grid-auto-columns: 72%; gap: 14px; } #plush-{{ sid }} .plush-btn { display: none; }
+    #plush-{{ sid }} .plush-head { align-items: flex-start; gap: 12px; }
+  }
+
+  #plush-{{ sid }} .plush-slide { scroll-snap-align: start; }
+
+  /* pastel palette — each card takes the next color */
+  #plush-{{ sid }} .plush-slide:nth-child(6n+1) .plush-card { --tint: #ffe1ec; --tint-2: #ffc7dc; --deep: #f06a9b; }
+  #plush-{{ sid }} .plush-slide:nth-child(6n+2) .plush-card { --tint: #fff1cc; --tint-2: #ffe08f; --deep: #e9a417; }
+  #plush-{{ sid }} .plush-slide:nth-child(6n+3) .plush-card { --tint: #dcf6e6; --tint-2: #b5ecca; --deep: #2fa868; }
+  #plush-{{ sid }} .plush-slide:nth-child(6n+4) .plush-card { --tint: #ddeeff; --tint-2: #b8dbff; --deep: #3d8be0; }
+  #plush-{{ sid }} .plush-slide:nth-child(6n+5) .plush-card { --tint: #ece3ff; --tint-2: #d6c6ff; --deep: #8a63e6; }
+  #plush-{{ sid }} .plush-slide:nth-child(6n+6) .plush-card { --tint: #ffe6d6; --tint-2: #ffcaa8; --deep: #ec7c3c; }
+  {%- unless section.settings.rotate_colors %}
+  #plush-{{ sid }} .plush-slide .plush-card { --tint: {{ section.settings.tint_color }}; --tint-2: {{ section.settings.tint_color | color_darken: 8 }}; --deep: {{ section.settings.accent_color }}; }
+  {%- endunless %}
+
+  #plush-{{ sid }} .plush-card {
+    position: relative; display: flex; flex-direction: column; border-radius: 22px; text-decoration: none; color: #1a1a1a;
+    background: var(--pl-card); aspect-ratio: 5 / 7; padding: 7px;
+    box-shadow: 0 1px 3px rgba(17,24,39,.06), 0 6px 16px rgba(17,24,39,.07);
+    transition: transform .35s cubic-bezier(.3,1.5,.5,1), box-shadow .35s;
+  }
+  #plush-{{ sid }} .plush-card:hover, #plush-{{ sid }} .plush-card.is-hop { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(17,24,39,.08), 0 16px 32px rgba(17,24,39,.12); }
+
+  /* pillow stage with stitched seam */
+  #plush-{{ sid }} .plush-stage {
+    position: relative; flex: 1; min-height: 0; border-radius: 17px; overflow: hidden;
+    background: radial-gradient(90% 70% at 50% 42%, #fff 0%, var(--tint) 58%, var(--tint-2) 100%);
+  }
+  #plush-{{ sid }} .plush-stage::after {
+    content: ""; position: absolute; inset: 7px; border-radius: 12px; pointer-events: none;
+    border: 2px dashed color-mix(in srgb, var(--deep) 45%, transparent);
+  }
+  #plush-{{ sid }} .plush-ground {
+    position: absolute; left: 50%; bottom: 9%; width: 58%; height: 7%; transform: translateX(-50%); border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(17,24,39,.22), rgba(17,24,39,0)); pointer-events: none;
+  }
+  #plush-{{ sid }} .plush-hop { position: absolute; inset: 0; display: grid; place-items: center; padding: 11% 9% 9%; transform-origin: 50% 88%; }
+  #plush-{{ sid }} .plush-body { width: 100%; height: 100%; display: grid; place-items: center; transform-origin: 50% 88%; animation: plushBreathe 3.6s ease-in-out infinite; }
+  #plush-{{ sid }} .plush-slide:nth-child(even) .plush-body { animation-delay: -1.8s; }
+  #plush-{{ sid }} .plush-body img, #plush-{{ sid }} .plush-body svg { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(17,24,39,.10)); }
+  #plush-{{ sid }}.is-offscreen .plush-body { animation-play-state: paused; }
+
+  @keyframes plushBreathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.018, .982); } }
+  @keyframes plushHop {
+    0%   { transform: translateY(0) scale(1, 1); }
+    14%  { transform: translateY(0) scale(1.07, .9); }
+    38%  { transform: translateY(-11%) scale(.95, 1.06); }
+    58%  { transform: translateY(0) scale(1.08, .9); }
+    72%  { transform: translateY(-2%) scale(.98, 1.02); }
+    86%  { transform: translateY(0) scale(1.02, .98); }
+    100% { transform: translateY(0) scale(1, 1); }
+  }
+  @keyframes plushGround {
+    0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+    14% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+    38% { transform: translateX(-50%) scale(.72); opacity: .55; }
+    58% { transform: translateX(-50%) scale(1.12); opacity: 1; }
+  }
+  #plush-{{ sid }} .plush-card.is-hop .plush-hop { animation: plushHop .9s cubic-bezier(.3,.7,.4,1) both; }
+  #plush-{{ sid }} .plush-card.is-hop .plush-ground { animation: plushGround .9s cubic-bezier(.3,.7,.4,1) both; }
+
+  /* floating hearts */
+  #plush-{{ sid }} .plush-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  #plush-{{ sid }} .plush-heart {
+    position: absolute; bottom: 40%; width: 18px; height: 18px; color: var(--deep); opacity: 0;
+    animation: plushHeart 1.4s ease-out forwards;
+  }
+  @keyframes plushHeart {
+    0%   { opacity: 0; transform: translate(0, 0) scale(.4) rotate(var(--r, 0deg)); }
+    18%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx, 0px), -120px) scale(1.05) rotate(var(--r, 0deg)); }
+  }
+
+  #plush-{{ sid }} .plush-info { padding: 10px 8px 5px; }
+  #plush-{{ sid }} .plush-vendor { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; opacity: .6; margin: 0 0 2px; }
+  #plush-{{ sid }} .plush-name { font-size: 15px; font-weight: 800; line-height: 1.25; margin: 0 0 8px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #plush-{{ sid }} .plush-price { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-weight: 800; font-size: 17px; }
+  #plush-{{ sid }} .plush-price s { font-weight: 500; opacity: .55; font-size: 14px; }
+  #plush-{{ sid }} .plush-tag { position: absolute; top: 16px; left: 16px; z-index: 5; font-size: 11px; font-weight: 800; letter-spacing: 1px;
+    padding: 5px 10px; border-radius: 999px; background: var(--pl-accent); color: #fff; text-transform: uppercase; }
+  #plush-{{ sid }} .plush-tag.is-soldout { background: #222; }
+  {%- if section.settings.columns_desktop > 4 %}
+  @media (min-width: 1001px) and (max-width: 1599px) {
+    #plush-{{ sid }} .plush-name { font-size: 13px; }
+    #plush-{{ sid }} .plush-price { font-size: 15px; gap: 6px; }
+    #plush-{{ sid }} .plush-vendor { font-size: 10px; }
+    #plush-{{ sid }} .plush-info { padding: 8px 6px 3px; }
+    #plush-{{ sid }} .plush-tag { top: 14px; left: 14px; font-size: 10px; padding: 4px 8px; }
+  }
+  {%- endif %}
+
+
+  /* ---- Add to cart (bottom-right of each card) ---- */
+  #plush-{{ sid }} .plush-card { container-type: inline-size; }
+  #plush-{{ sid }} .plush-link { position: absolute; inset: 0; z-index: 6; border-radius: inherit; }
+  #plush-{{ sid }} .plush-link:focus-visible { outline: 3px solid var(--pl-accent); outline-offset: 3px; }
+  #plush-{{ sid }} .plush-atc {
+    position: absolute; right: 13px; bottom: 13px; z-index: 7;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    box-sizing: border-box; height: 34px; padding: 0 13px 0 11px; border: 0; border-radius: 999px; cursor: pointer;
+    background: var(--pl-accent); color: #fff; font: inherit; font-size: 13px; font-weight: 800; letter-spacing: .2px; line-height: 1; white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(226,47,57,.28), 0 1px 2px rgba(17,24,39,.12);
+    transition: transform .15s ease, box-shadow .2s, background .2s, opacity .2s; -webkit-tap-highlight-color: transparent;
+  }
+  #plush-{{ sid }} .plush-atc:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(226,47,57,.34), 0 2px 4px rgba(17,24,39,.14); }
+  #plush-{{ sid }} .plush-atc:active { transform: scale(.96); }
+  #plush-{{ sid }} .plush-atc:focus-visible { outline: 3px solid #262626; outline-offset: 2px; }
+  #plush-{{ sid }} .plush-atc svg { flex-shrink: 0; }
+  #plush-{{ sid }} .plush-atc .plush-atc-ok { display: none; }
+  #plush-{{ sid }} .plush-atc.is-added { background: #262626; box-shadow: 0 2px 6px rgba(17,24,39,.25); }
+  #plush-{{ sid }} .plush-atc.is-added .plush-atc-ic { display: none; }
+  #plush-{{ sid }} .plush-atc.is-added .plush-atc-ok { display: block; }
+  #plush-{{ sid }} .plush-atc.is-loading { pointer-events: none; }
+  #plush-{{ sid }} .plush-atc.is-loading .plush-atc-ic { animation: plushAtcPulse .7s ease-in-out infinite alternate; }
+  #plush-{{ sid }} .plush-atc.is-error { background: #262626; }
+  @keyframes plushAtcPulse { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+  /* keep the price clear of the button */
+  #plush-{{ sid }} .plush-card.has-atc .plush-price { padding-right: 118px; min-height: 34px; }
+  /* narrow cards: round icon-only button */
+  @container (max-width: 225px) {
+    #plush-{{ sid }} .plush-atc { width: 36px; height: 36px; padding: 0; }
+    #plush-{{ sid }} .plush-atc .plush-atc-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    #plush-{{ sid }} .plush-card.has-atc .plush-price { padding-right: 44px; min-height: 36px; }
+  }
+
+  /* ---- Mobile 'View all' button under the slider ---- */
+  #plush-{{ sid }} .plush-more { display: none; }
+  @media (max-width: 760px) {
+    #plush-{{ sid }} .plush-nav { display: none; }
+    #plush-{{ sid }} .plush-more { display: block; margin-top: 14px; }
+    #plush-{{ sid }} .plush-more a {
+      box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 50px; padding: 12px 18px;
+      border-radius: 14px; background: var(--pl-accent); color: #fff; text-decoration: none; font-size: 15px; font-weight: 800; letter-spacing: .3px;
+      box-shadow: 0 4px 12px rgba(226,47,57,.25); -webkit-tap-highlight-color: transparent; transition: transform .15s;
+    }
+    #plush-{{ sid }} .plush-more a:active { transform: scale(.98); }
+    #plush-{{ sid }} .plush-more .plush-more-count { font-weight: 600; opacity: .8; font-size: 13px; }
+    #plush-{{ sid }} .plush-more svg { margin-left: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #plush-{{ sid }} .plush-body, #plush-{{ sid }} .plush-hop, #plush-{{ sid }} .plush-ground { animation: none !important; }
+    #plush-{{ sid }} .plush-card { transition: none; }
+    #plush-{{ sid }} .plush-track { scroll-behavior: auto; }
+  }
+{% endstyle %}
+
+<section id="plush-{{ sid }}" class="plush-section" data-plush-section>
+  <div class="plush-wrap">
+    <div class="plush-head">
+      <div>
+        <h2 class="plush-title">
+          {%- if section.settings.badge != blank -%}<span class="plush-badge">{{ section.settings.badge | escape }}</span>{%- endif -%}
+          {{ section.settings.title | escape }}
+        </h2>
+        {%- if section.settings.subtitle != blank -%}<p class="plush-sub">{{ section.settings.subtitle | escape }}</p>{%- endif -%}
+      </div>
+      <div class="plush-nav">
+        {%- if section.settings.show_view_all and coll != blank -%}
+          <a class="plush-viewall" href="{{ coll.url }}"><span>View All</span><span class="plush-more-count">{{ coll.products_count }} items</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        {%- endif -%}
+        <button type="button" class="plush-btn" data-plush-prev aria-label="Previous">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button type="button" class="plush-btn" data-plush-next aria-label="Next">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="plush-track" data-plush-track>
+      {%- if coll != blank and coll.products.size > 0 -%}
+        {%- for product in coll.products limit: limit -%}
+          <div class="plush-slide">
+            <div class="plush-card{% if product.available %} has-atc{% endif %}" data-plush-card>
+              <a class="plush-link" href="{{ product.url }}" aria-label="{{ product.title | escape }}"></a>
+              {%- unless product.available -%}
+                <span class="plush-tag is-soldout">{{ section.settings.soldout_label | escape }}</span>
+              {%- else -%}
+                {%- if section.settings.new_label != blank -%}<span class="plush-tag">{{ section.settings.new_label | escape }}</span>{%- endif -%}
+              {%- endunless -%}
+              <div class="plush-stage">
+                <span class="plush-ground"></span>
+                <div class="plush-hop">
+                  <div class="plush-body">
+                    {%- if product.featured_image -%}
+                      {{ product.featured_image | image_url: width: 700 | image_tag: loading: 'lazy', alt: product.featured_image.alt, widths: '350, 500, 700', sizes: '(max-width: 760px) 70vw, 25vw' }}
+                    {%- else -%}
+                      {{ 'product-1' | placeholder_svg_tag }}
+                    {%- endif -%}
+                  </div>
+                </div>
+                <div class="plush-fx" data-plush-fx></div>
+              </div>
+              <div class="plush-info">
+                {%- if section.settings.show_vendor -%}<p class="plush-vendor">{{ product.vendor | escape }}</p>{%- endif -%}
+                <p class="plush-name">{{ product.title | escape }}</p>
+                <div class="plush-price">
+                  <span>{{ product.price | money }}</span>
+                  {%- if product.compare_at_price > product.price -%}<s>{{ product.compare_at_price | money }}</s>{%- endif -%}
+                </div>
+              </div>
+              {%- if product.available -%}
+                <button type="button" class="plush-atc" data-plush-atc data-variant-id="{{ product.selected_or_first_available_variant.id }}" aria-label="Add {{ product.title | escape }} to cart"><svg class="plush-atc-ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17.5" cy="20" r="1.3"/></svg><svg class="plush-atc-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="plush-atc-label">Add to Cart</span></button>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..4) -%}
+          <div class="plush-slide">
+            <div class="plush-card" data-plush-card>
+              <div class="plush-stage"><span class="plush-ground"></span>
+                <div class="plush-hop"><div class="plush-body">{{ 'product-1' | placeholder_svg_tag }}</div></div>
+                <div class="plush-fx" data-plush-fx></div></div>
+              <div class="plush-info"><p class="plush-name">Choose a collection</p></div>
+            </div>
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+    {%- if section.settings.show_view_all and coll != blank -%}
+      <div class="plush-more">
+        <a href="{{ coll.url }}"><span>View All {{ section.settings.title | escape }}</span><span class="plush-more-count">{{ coll.products_count }} items</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var HEART = '<svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.3 1.1 4.1 2.3h3C14.3 6.1 15.6 5 17.6 5 21 5 23.1 8.4 21.6 11.8 19.5 16.4 12 21 12 21z"/></svg>';
+
+    function initPlush(root) {
+      if (!root || root.getAttribute('data-plush-ready')) return;
+      root.setAttribute('data-plush-ready', '1');
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var noHover = window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches;
+      var cards = Array.prototype.slice.call(root.querySelectorAll('[data-plush-card]'));
+
+      function hearts(card) {
+        var fx = card.querySelector('[data-plush-fx]');
+        if (!fx) return;
+        for (var i = 0; i < 3; i++) {
+          var h = document.createElement('span');
+          h.className = 'plush-heart';
+          h.innerHTML = HEART;
+          h.style.left = (32 + Math.random() * 36) + '%';
+          h.style.setProperty('--dx', (Math.random() * 40 - 20).toFixed(0) + 'px');
+          h.style.setProperty('--r', (Math.random() * 30 - 15).toFixed(0) + 'deg');
+          h.style.animationDelay = (120 + i * 160) + 'ms';
+          var s = 16 + Math.random() * 10;
+          h.style.width = h.style.height = s.toFixed(0) + 'px';
+          fx.appendChild(h);
+          (function (el) { setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2000); })(h);
+        }
+      }
+      function hop(card) {
+        if (reduce || !card || card.getAttribute('data-hopping')) return;
+        card.setAttribute('data-hopping', '1');
+        card.classList.remove('is-hop');
+        void card.offsetWidth;
+        card.classList.add('is-hop');
+        hearts(card);
+        setTimeout(function () { card.classList.remove('is-hop'); card.removeAttribute('data-hopping'); }, 950);
+      }
+
+      if (!noHover) cards.forEach(function (card) {
+        card.addEventListener('pointerenter', function () { hop(card); });
+      });
+
+
+      /* ---- Add to cart buttons ---- */
+      root.querySelectorAll('[data-plush-atc]').forEach(function (btn) {
+        var label = btn.querySelector('.plush-atc-label');
+        var original = label ? label.textContent : '';
+        var timer = null;
+        function flash(cls, text, ms) {
+          clearTimeout(timer);
+          btn.classList.remove('is-loading', 'is-added', 'is-error');
+          if (cls) btn.classList.add(cls);
+          if (label && text) label.textContent = text;
+          timer = setTimeout(function () { btn.classList.remove(cls); if (label) label.textContent = original; }, ms);
+        }
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (btn.classList.contains('is-loading')) return;
+          btn.classList.add('is-loading');
+          var cart = document.querySelector('cart-drawer') || document.querySelector('cart-notification') || document.querySelector('cart-items');
+          var fd = new FormData();
+          fd.append('id', btn.getAttribute('data-variant-id'));
+          fd.append('quantity', '1');
+          if (cart && typeof cart.getSectionsToRender === 'function') {
+            fd.append('sections', cart.getSectionsToRender().map(function (s) { return s.id; }));
+            fd.append('sections_url', window.location.pathname);
+            if (typeof cart.setActiveElement === 'function') cart.setActiveElement(btn);
+          }
+          var url = (window.routes && window.routes.cart_add_url) || '/cart/add';
+          fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/javascript' }, body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+              if (res.status) {
+                flash('is-error', 'Max in cart', 2200);
+                if (typeof window.pushErrorMessage === 'function') window.pushErrorMessage(res.description || res.message);
+                return;
+              }
+              flash('is-added', 'Added', 1800);
+              if (cart && typeof cart.renderContents === 'function') {
+                cart.renderContents(res);
+                if (cart.classList.contains('is-empty')) cart.classList.remove('is-empty');
+              } else if (!cart) {
+                window.location = (window.routes && window.routes.cart_url) || '/cart';
+                return;
+              }
+              document.dispatchEvent(new CustomEvent('afterCartChanged', { detail: { productVariantId: fd.get('id'), source: 'plush-slider', cartData: res } }));
+            })
+            .catch(function () { flash('is-error', 'Try again', 2200); });
+        });
+      });
+
+      var track = root.querySelector('[data-plush-track]');
+      var prev = root.querySelector('[data-plush-prev]');
+      var next = root.querySelector('[data-plush-next]');
+      if (!track) return;
+      function step() {
+        var s = track.querySelector('.plush-slide');
+        return s ? s.getBoundingClientRect().width + (parseFloat(getComputedStyle(track).columnGap) || 0) : track.clientWidth;
+      }
+      function update() {
+        if (!prev || !next) return;
+        prev.disabled = track.scrollLeft <= 2;
+        next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
+      }
+      if (prev) prev.addEventListener('click', function () { track.scrollBy({ left: -step(), behavior: reduce ? 'auto' : 'smooth' }); });
+      if (next) next.addEventListener('click', function () { track.scrollBy({ left: step(), behavior: reduce ? 'auto' : 'smooth' }); });
+      track.addEventListener('scroll', function () { window.requestAnimationFrame(update); }, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+
+      /* Pause the breathing when the section is off screen */
+      var onScreen = true;
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) {
+          onScreen = entries[0].isIntersecting;
+          root.classList.toggle('is-offscreen', !onScreen);
+          if (onScreen && noHover) hop(pickCard());
+        }, { threshold: 0.25 }).observe(root);
+      }
+
+      /* Phones & tablets: the card in view hops every few seconds; touching a card makes it hop too */
+      function pickCard() {
+        var tr = track.getBoundingClientRect(), best = null, bestVis = 0;
+        cards.forEach(function (c) {
+          var r = c.getBoundingClientRect();
+          var vis = Math.min(r.right, tr.right) - Math.max(r.left, tr.left);
+          if (vis > bestVis + 1) { bestVis = vis; best = c; }
+        });
+        return best;
+      }
+      if (noHover && !reduce) {
+        var settle = null;
+        setInterval(function () { if (onScreen && !document.hidden) hop(pickCard()); }, 3200);
+        track.addEventListener('scroll', function () {
+          clearTimeout(settle);
+          settle = setTimeout(function () { hop(pickCard()); }, 200);
+        }, { passive: true });
+        cards.forEach(function (c) { c.addEventListener('touchstart', function () { hop(c); }, { passive: true }); });
+      }
+    }
+    function initAll() { document.querySelectorAll('[data-plush-section]').forEach(initPlush); }
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initAll); } else { initAll(); }
+    document.addEventListener('shopify:section:load', initAll);
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Plush Product Slider",
+  "tag": "div",
+  "class": "plush-product-slider",
+  "settings": [
+    { "type": "text", "id": "badge", "label": "Badge text", "default": "NEW" },
+    { "type": "text", "id": "title", "label": "Title", "default": "Pokémon Plush" },
+    { "type": "text", "id": "subtitle", "label": "Subtitle", "default": "Official Pokémon Center plush, ready for a hug." },
+    { "type": "collection", "id": "collection", "label": "Collection" },
+    { "type": "range", "id": "products_to_show", "label": "Products to show", "min": 2, "max": 24, "step": 1, "default": 12 },
+    { "type": "range", "id": "columns_desktop", "label": "Cards visible on desktop", "min": 3, "max": 6, "step": 1, "default": 6 },
+    { "type": "checkbox", "id": "full_width", "label": "Full page width", "default": true },
+    { "type": "checkbox", "id": "show_view_all", "label": "Show 'View all' link", "default": true },
+    { "type": "checkbox", "id": "show_vendor", "label": "Show vendor", "default": false },
+    { "type": "text", "id": "new_label", "label": "Card tag (in stock)", "default": "New" },
+    { "type": "text", "id": "soldout_label", "label": "Card tag (sold out)", "default": "Coming soon" },
+    { "type": "header", "content": "Colors" },
+    { "type": "checkbox", "id": "rotate_colors", "label": "Pastel color for each card", "info": "Cycles pink, yellow, mint, blue, lavender and peach. Turn off to use one card color.", "default": true },
+    { "type": "color", "id": "tint_color", "label": "Card color (when not rotating)", "default": "#ffe1ec" },
+    { "type": "color", "id": "bg_color", "label": "Background", "default": "#ffffff" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#1a1a1a" },
+    { "type": "color", "id": "accent_color", "label": "Accent (buttons & tags)", "default": "#e22f39" },
+    { "type": "color", "id": "card_color", "label": "Card frame", "default": "#ffffff" },
+    { "type": "header", "content": "Spacing" },
+    { "type": "range", "id": "padding_top", "label": "Top padding", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 48 },
+    { "type": "range", "id": "padding_bottom", "label": "Bottom padding", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 48 }
+  ],
+  "presets": [
+    { "name": "Plush Product Slider" }
+  ]
+}
+{% endschema %}
